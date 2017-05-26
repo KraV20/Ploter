@@ -51,7 +51,8 @@ public class GCode4 extends JFrame {
 
 	
 
-		public void execute(String code, float x, float y, float i, float j, Graphics g) throws InterruptedException {
+		public void execute(String code, float x, float y,float z, float i, float j, Graphics g) throws InterruptedException {
+			current_units_z = z;
 			switch (code) {
 			case "G00":
 			case "G01":
@@ -59,7 +60,6 @@ public class GCode4 extends JFrame {
 			case "G1 ":
 			case "G1":
 			case "G0":
-				System.out.println("TEST");
 				dda_move(x, y, g);
 				break;
 			case "G02":
@@ -82,10 +82,9 @@ public class GCode4 extends JFrame {
 		}
 
 		public void dda_move(float target_units_x, float target_units_y, Graphics g) throws InterruptedException {
-			System.out.println("ASDASDASDASDASD");
 			calculate_deltas();
-		//	 g.drawLine(10, 10, 10,800);
-		//	 g.drawLine(10, 800, 800, 400);
+		//	 g.drawLine(100, 100, 200,200);
+			 g.drawLine(100, 500, 800, 400);
 		//	 g.drawLine(50, 400, 5, 5);
 		//	 g.drawLine(50, 200, 5, 5);
 			
@@ -123,7 +122,6 @@ public class GCode4 extends JFrame {
 				y_can_step = can_step(current_steps_y, target_steps_y, y_direction);
 				// z_can_step = can_step(Z_MIN_PIN, Z_MAX_PIN, current_steps.z,
 				// target_steps.z, z_direction);
-				Thread.sleep(2);
 //				if(CollisionDetector.detectCollisopn(pinsInput)){
 //                    break;
 //                }
@@ -135,22 +133,19 @@ public class GCode4 extends JFrame {
 						// System.out.println("XXXXXXXXXXX COUNTER "
 						// +x_counter);
 						if (x_counter > 0) {
-							Thread.sleep(2);
 							// do_step(X_STEP_PIN);
 							// motorX.doStep(1,direX, pinsOutput[0],
 							// pinsOutput[1],
 							// pinsOutput[2]);
 							// current_units_x++;
-							Thread.sleep(0);
 							x_counter -= max_delta;
 							if (x_direction) {
 								current_steps_x++;
 								if (current_units_z < 0)
-
 									g.drawLine((int) (current_units_x * STEP_PER_INCH + 200),
-											(int) (-current_units_y * STEP_PER_INCH +0),
+											(int) (-current_units_y * STEP_PER_INCH +700),
 											(int) (target_units_x * STEP_PER_INCH + 200),
-											(int) (-target_units_y * STEP_PER_INCH + 0));
+											(int) (-target_units_y * STEP_PER_INCH + 700));
 								// g.drawLine((int) (current_steps_x + 300),
 								// (int)
 								// (current_steps_y + 300),
@@ -162,9 +157,9 @@ public class GCode4 extends JFrame {
 								current_steps_x--;
 								if (current_units_z < 0)
 									g.drawLine((int) (current_units_x * STEP_PER_INCH + 200),
-											(int) (-current_units_y * STEP_PER_INCH +0),
+											(int) (-current_units_y * STEP_PER_INCH +700),
 											(int) (target_units_x * STEP_PER_INCH + 200),
-											(int) (-target_units_y * STEP_PER_INCH + 0));
+											(int) (-target_units_y * STEP_PER_INCH + 700));
 								// g.drawLine((int) (current_steps_x + 300),
 								// (int)
 								// (current_steps_y + 300),
@@ -175,13 +170,11 @@ public class GCode4 extends JFrame {
 					}
 
 				if (y_can_step) {
-					Thread.sleep(2);
-					System.out.println("DIRE Y " + direY);
+				//	System.out.println("DIRE Y " + direY);
 					y_counter += delta_steps_y;
 
 					if (y_counter > 0) {
 
-						Thread.sleep(0);
 						// motorY.doStep(1, direX, pins[3], pins[4], pins[5]);
 						// do_step(Y_STEP_PIN);
 						// current_units_y++;
@@ -191,9 +184,9 @@ public class GCode4 extends JFrame {
 							current_steps_y++;
 							if (current_units_z < 0)
 								g.drawLine((int) (current_units_x * STEP_PER_INCH + 200),
-										(int) (-current_units_y * STEP_PER_INCH +0),
+										(int) (-current_units_y * STEP_PER_INCH +700),
 										(int) (target_units_x * STEP_PER_INCH + 200),
-										(int) (-target_units_y * STEP_PER_INCH + 0));
+										(int) (-target_units_y * STEP_PER_INCH +700));
 							// g.drawLine((int) (current_steps_x + 300), (int)
 							// (current_steps_y + 300),
 							// (int) (current_steps_x + 300), (int)
@@ -202,9 +195,9 @@ public class GCode4 extends JFrame {
 							current_steps_y--;
 							if (current_units_z < 0)
 								g.drawLine((int) (current_units_x * STEP_PER_INCH + 200),
-										(int) (-current_units_y * STEP_PER_INCH + 0),
+										(int) (-current_units_y * STEP_PER_INCH +700),
 										(int) (target_units_x * STEP_PER_INCH + 200),
-										(int) (-target_units_y * STEP_PER_INCH + 0));
+										(int) (-target_units_y * STEP_PER_INCH + 700));
 							// g.drawLine((int) (current_steps_x + 300), (int)
 							// (current_steps_y + 300),
 							// (int) (current_steps_x + 300), (int)
@@ -219,7 +212,6 @@ public class GCode4 extends JFrame {
 				// if (milli_delay > 0)
 				// delay(milli_delay);
 				// else
-				Thread.sleep(0);
 				// delayMicroseconds(micro_delay);
 			} while (x_can_step || y_can_step);
 
@@ -227,8 +219,8 @@ public class GCode4 extends JFrame {
 			current_units_x = target_units_x;
 
 			current_units_y = target_units_y;
-			current_units_z = target_units_z;
-			System.out.println("Current_x :" + current_units_x + " current y " + current_units_y);
+			//current_units_z = target_units_z;
+			System.out.println("Current_x :" + current_units_x + " current y " + current_units_y + "current z " + current_units_z);
 			System.out.println("Target_x :" + target_units_x + " Target_y " + target_units_y);
 			// calculate_deltas();
 		}

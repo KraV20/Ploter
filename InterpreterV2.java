@@ -7,6 +7,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
@@ -75,7 +75,9 @@ public class InterpreterV2 extends JFrame implements Runnable {
 	JButton stopButton = new JButton("Stop");
 
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	
 	Box box = Box.createVerticalBox();
+	
 	Graphics g;
 
 	private GpioPinDigitalInput[] pinsInput;
@@ -88,7 +90,7 @@ public class InterpreterV2 extends JFrame implements Runnable {
 	public InterpreterV2() {
 		// Gpio.wiringPiSetup();
 		this.setTitle("Interpreter ");
-
+		
 		this.setPreferredSize(new Dimension(900, 900));
 		this.pack();
 		this.setVisible(true);
@@ -137,9 +139,14 @@ public class InterpreterV2 extends JFrame implements Runnable {
 
 		if (returnValue == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = jfc.getSelectedFile();
+			FileInputStream inputStream = null;
+			Scanner sc = null;
 			System.out.println(selectedFile.getAbsolutePath());
 			try {
-				fileScanner = new Scanner(new FileReader(selectedFile));
+				inputStream = new FileInputStream(selectedFile.getAbsolutePath());
+			    sc = new Scanner(inputStream, "UTF-8");
+				//fileScanner = new Scanner(new FileReader(selectedFile));
+			    fileScanner = sc;
 			} catch (FileNotFoundException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -149,27 +156,27 @@ public class InterpreterV2 extends JFrame implements Runnable {
 
 	public void run1(Graphics grap) throws InterruptedException, IOException, ParseException {
 		
-		
+		//grap.drawLine(100, 100, 200, 200);
 		this.initArray(gcodes);
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 
-				for (GCodeObject g : gcodes) {
+				for (GCodeObject gc : gcodes) {
 					if (breakProgram)
 						break;
 					try {
 					//	System.out.println(g.code + g.xAxis);
 						
-						gcode.execute(g.code, g.xAxis, g.yAxis, g.pointI, g.pointJ, grap);
-						System.out.println("TEST"+ g.code + g.xAxis);
-						g.toString();
-						gcode.toString();
+						gcode.execute(gc.code, gc.xAxis, gc.yAxis,gc.zAxis, gc.pointI, gc.pointJ, g);
+						//System.out.println("TEST"+ gc.code + gc.xAxis);
+					//	g.toString();
+					//	gcode.toString();
 						// gcode.execute(code, target_units_x2, target_units_y2,
 						// cent_x2, cent_y2, graphics);
 						// g.execute(g.code, g.target_units_x, g.target_units_y,
 						// g.cent_x, g.cent_y, grap);
-						gcode.toString();
+					//	gcode.toString();
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
