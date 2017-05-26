@@ -31,7 +31,6 @@ import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
-import com.pi4j.io.gpio.PinPullResistance;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 
@@ -45,29 +44,33 @@ public class InterpreterV2 extends JFrame implements Runnable {
 	// gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, PinState.LOW),
 	// gpio.provisionDigitalOutputPin(RaspiPin.GPIO_03, PinState.LOW)
 	//
-	// };
-	// final GpioPinDigitalInput[] pinsInput = {
-	// gpio.provisionDigitalInputPin(RaspiPin.GPIO_06,
-	// PinPullResistance.PULL_DOWN)
 	//
 	// };
-	// ServoMotor pen = new ServoMotor();
+//	final GpioPinDigitalInput[] pinsInput = {
+//		       gpio.provisionDigitalInputPin(RaspiPin.GPIO_06,PinPullResistance.PULL_DOWN)
+//		       
+//		    };
+	//static ServoMotor pen = new ServoMotor();
 	// StepperMotor motorX = new StepperMotor();
 	// StepperMotor motorY = new StepperMotor();
 	/** The x. */
-	private float xAxis = 0;
+	private static double xAxis;
 
 	/** The y. */
-	private float yAxis = 0;
+	private static double yAxis;
 
 	/** The z. */
-	private float zAxis = 0;
+	private static double zAxis;
 
-	private float pointI = 0;
+	private static double pointI;
 
-	private float pointJ = 0;
+	private static double pointJ;
 
 	private static boolean breakProgram = false;
+
+	private static GpioPinDigitalInput[] pinsInput;
+
+	private static GpioPinDigitalOutput[] pinsOutput;
 
 	Scanner fileScanner = null;
 	JButton selectButton = new JButton("Open file");
@@ -78,17 +81,10 @@ public class InterpreterV2 extends JFrame implements Runnable {
 	Box box = Box.createVerticalBox();
 	Graphics g;
 
-	private GpioPinDigitalInput[] pinsInput;
-
-	private GpioPinDigitalOutput[] pinsOutput;
-
-	final ArrayList<GCodeObject> gcodes = new ArrayList<GCodeObject>();
-	
-	GCode4 gcode = new GCode4("", xAxis, yAxis, zAxis, pointI, pointJ, pinsOutput, pinsInput);
 	public InterpreterV2() {
-		// Gpio.wiringPiSetup();
+		//Gpio.wiringPiSetup();
 		this.setTitle("Interpreter ");
-
+		
 		this.setPreferredSize(new Dimension(900, 900));
 		this.pack();
 		this.setVisible(true);
@@ -105,6 +101,7 @@ public class InterpreterV2 extends JFrame implements Runnable {
 		box.setBorder(BorderFactory.createTitledBorder("Menu"));
 		Toolkit.getDefaultToolkit().setDynamicLayout(false);
 		selectButton.addActionListener(new ActionListener() {
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				choseFile();
@@ -148,28 +145,17 @@ public class InterpreterV2 extends JFrame implements Runnable {
 	}
 
 	public void run1(Graphics grap) throws InterruptedException, IOException, ParseException {
-		
-		
+		final ArrayList<GCode4> gcodes = new ArrayList<GCode4>();
 		this.initArray(gcodes);
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 
-				for (GCodeObject g : gcodes) {
+				for (GCode4 g : gcodes) {
 					if (breakProgram)
 						break;
 					try {
-					//	System.out.println(g.code + g.xAxis);
-						
-						gcode.execute(g.code, g.xAxis, g.yAxis, g.pointI, g.pointJ, grap);
-						System.out.println("TEST"+ g.code + g.xAxis);
-						g.toString();
-						gcode.toString();
-						// gcode.execute(code, target_units_x2, target_units_y2,
-						// cent_x2, cent_y2, graphics);
-						// g.execute(g.code, g.target_units_x, g.target_units_y,
-						// g.cent_x, g.cent_y, grap);
-						gcode.toString();
+						g.execute(g.code, g.target_units_x, g.target_units_y, g.cent_x, g.cent_y, grap);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -181,15 +167,16 @@ public class InterpreterV2 extends JFrame implements Runnable {
 		t.start();
 	}
 
-	public ArrayList<GCodeObject> initArray(ArrayList<GCodeObject> gCodeArray) throws IOException, ParseException {
+	private static GCode4 gcode = new GCode4("", xAxis, yAxis, zAxis, pointI, pointJ,pinsOutput,pinsInput);
+
+	public ArrayList<GCode4> initArray(ArrayList<GCode4> gCodeArray) throws IOException, ParseException {
 		// Scanner fileScanner = new Scanner(new FileReader("src/logo
 		// uzBigv2.cnc"));
 		String line;
-		Scanner sc;
 		while (fileScanner.hasNextLine()) {
 			line = fileScanner.nextLine();
 			line = line.replaceFirst("N\\d+ ", "");
-			sc = new Scanner(line);
+			Scanner sc = new Scanner(line);
 
 			switch (sc.next()) {
 
@@ -198,17 +185,12 @@ public class InterpreterV2 extends JFrame implements Runnable {
 			case "G1":
 			case "G01":
 				getOutData2(line);
-				gCodeArray.add(new GCodeObject(xAxis, yAxis, zAxis, pointI, pointJ, "G01"));
-				// gCodeArray.add(gcode.new G00(line.substring(0, 3), xAxis,
-				// yAxis, zAxis, pointI, pointJ));
-
+				gCodeArray.add(gcode.new G00(line.substring(0, 3), xAxis, yAxis, zAxis, pointI, pointJ));
 				break;
 			case "G2":
 			case "G02":
 				getOutData2(line);
-				gCodeArray.add(new GCodeObject(xAxis, yAxis, zAxis, pointI, pointJ, "G02"));
-				// gCodeArray.add(gcode.new G00(line.substring(0, 3), xAxis,
-				// yAxis, zAxis, pointI, pointJ));
+				gCodeArray.add(gcode.new G00(line.substring(0, 3), xAxis, yAxis, zAxis, pointI, pointJ));
 				break;
 			default:
 				break;
@@ -239,51 +221,51 @@ public class InterpreterV2 extends JFrame implements Runnable {
 			case 'Z':
 			case 'z':
 				try {
-					zAxis = f.parse(tokens.get(i1).substring(1)).floatValue();
+					zAxis = f.parse(tokens.get(i1).substring(1)).doubleValue();
 				} finally {
 					if (!parsed)
-						zAxis = Float.parseFloat(tokens.get(i1).substring(1));
+						zAxis = Double.parseDouble(tokens.get(i1).substring(1));
 				}
 
 				break;
 			case 'X':
 			case 'x':
 				try {
-					xAxis = f.parse(tokens.get(i1).substring(1)).floatValue();
+					xAxis = f.parse(tokens.get(i1).substring(1)).doubleValue();
 					parsed = true;
 				} finally {
 					if (!parsed)
-						xAxis = Float.parseFloat(tokens.get(i1).substring(1));
+						xAxis = Double.parseDouble(tokens.get(i1).substring(1));
 				}
 				break;
 			case 'Y':
 			case 'y':
 				try {
-					yAxis = f.parse(tokens.get(i1).substring(1)).floatValue();
+					yAxis = f.parse(tokens.get(i1).substring(1)).doubleValue();
 					parsed = true;
 				} finally {
 					if (!parsed)
-						yAxis = Float.parseFloat(tokens.get(i1).substring(1));
+						yAxis = Double.parseDouble(tokens.get(i1).substring(1));
 				}
 				break;
 			case 'I':
 			case 'i':
 				try {
-					pointI = f.parse(tokens.get(i1).substring(1)).floatValue();
+					pointI = f.parse(tokens.get(i1).substring(1)).doubleValue();
 					parsed = true;
 				} finally {
 					if (!parsed)
-						pointI = Float.parseFloat(tokens.get(i1).substring(1));
+						pointI = Double.parseDouble(tokens.get(i1).substring(1));
 				}
 				break;
 			case 'J':
 			case 'j':
 				try {
-					pointJ = f.parse(tokens.get(i1).substring(1)).floatValue();
+					pointJ = f.parse(tokens.get(i1).substring(1)).doubleValue();
 					parsed = true;
 				} finally {
 					if (!parsed)
-						pointJ = Float.parseFloat(tokens.get(i1).substring(1));
+						pointJ = Double.parseDouble(tokens.get(i1).substring(1));
 				}
 				break;
 			default:
@@ -298,7 +280,6 @@ public class InterpreterV2 extends JFrame implements Runnable {
 
 		final InterpreterV2 inte = new InterpreterV2();
 		inte.g = inte.getGraphics();
-		// inte.setDefaultCloseOperation(operation);
 		// final ArrayList<GCode4> gcodes = new ArrayList<GCode4>();
 		// inte.initArray(gcodes);
 		// for (GCode4 g : gcodes) {
